@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Php-basicsql : A very basic MySQLi wrapper with some reporting tools/callbacks" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Php-basicsql</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/thedarkwinter/php-basicSQL">View on GitHub</a>
+
+          <h1 id="project_title">Php-basicsql</h1>
+          <h2 id="project_tagline">A very basic MySQLi wrapper with some reporting tools/callbacks</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/thedarkwinter/php-basicSQL/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/thedarkwinter/php-basicSQL/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="php-basicsql" class="anchor" href="#php-basicsql"><span class="octicon octicon-link"></span></a>php-basicSQL</h1>
+
+<p>A very basic MySQLi wrapper with some reporting tools/callbacks</p>
+
+<p>This static class provides a MySQLi interface with query() function that accepts pure SQL. It then stores the query along with statistics such as execute time, number of rows affected etc. At the end of execution, you can call report() to get an array of statistics. It also has callbacks for errors, queries, and slow_queries where your script can decide what to do (log, abort etc).</p>
+
+<h4>
+<a name="what-it-does-not-yet-do" class="anchor" href="#what-it-does-not-yet-do"><span class="octicon octicon-link"></span></a>What it does not [yet?] do</h4>
+
+<ul>
+<li>Any form in SQL injection protection. This is up to you</li>
+<li>Add framework style functions</li>
+<li>Use prepared statements</li>
+</ul><h4>
+<a name="what-it-does-do-usage" class="anchor" href="#what-it-does-do-usage"><span class="octicon octicon-link"></span></a>What it does do (usage)</h4>
+
+<h5>
+<a name="include-the-class-and-load-up-the-db" class="anchor" href="#include-the-class-and-load-up-the-db"><span class="octicon octicon-link"></span></a>Include the class, and load up the DB</h5>
+
+<div class="highlight highlight-php"><pre><span class="k">include</span><span class="p">(</span><span class="s1">'basicSQL.php'</span><span class="p">);</span>
+
+<span class="nx">basicSQL</span><span class="o">::</span><span class="na">Connect</span><span class="p">(</span> <span class="k">array</span><span class="p">(</span>
+    <span class="s1">'database'</span><span class="o">=&gt;</span><span class="s1">'mydb'</span><span class="p">,</span> <span class="s1">'host'</span><span class="o">=&gt;</span><span class="s1">'myhost'</span><span class="p">,</span> <span class="s1">'port'</span><span class="p">,</span> <span class="s1">'user'</span><span class="o">=&gt;</span><span class="s1">'myuser'</span><span class="p">,</span> <span class="s1">'password'</span><span class="o">=&gt;</span><span class="s1">'mypass'</span><span class="p">,</span> <span class="c1">// these can be in php.ini</span>
+    <span class="s1">'error_callback'</span> <span class="o">=&gt;</span> <span class="s1">'handle_error'</span><span class="p">,</span>
+    <span class="s1">'slow_query_callback'</span> <span class="o">=&gt;</span> <span class="s1">'handle_slow'</span><span class="p">,</span> <span class="nx">slow_query_time</span> <span class="o">=&gt;</span> <span class="mi">7</span><span class="p">,</span> <span class="c1">// queries longer than 7 seconds callback here</span>
+    <span class="s1">'query_callback'</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s1">'StaticLogClass'</span><span class="p">,</span><span class="s1">'LogQueries'</span><span class="p">),</span>
+    <span class="s1">'error_log_length'</span> <span class="o">=&gt;</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'query_log_length'</span><span class="o">=&gt;</span><span class="mi">20</span> <span class="c1">// store the last X queries/errors (default 100)</span>
+    <span class="p">));</span>
+</pre></div>
+
+<h5>
+<a name="write-some-callbacks-optional-of-course" class="anchor" href="#write-some-callbacks-optional-of-course"><span class="octicon octicon-link"></span></a>Write some callbacks, optional of course</h5>
+
+<div class="highlight highlight-php"><pre><span class="c1">// if we cant connect the might as well just die, otherwise we just echo the error to screen</span>
+<span class="k">function</span> <span class="nf">handle_error</span><span class="p">(</span><span class="nv">$e</span><span class="o">=</span><span class="k">array</span><span class="p">())</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="o">==</span><span class="s1">'connect'</span><span class="p">])</span> <span class="p">{</span> 
+      <span class="k">die</span><span class="p">(</span><span class="s2">"</span><span class="si">{</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'no'</span><span class="p">]</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'error'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">echo</span> <span class="s2">"SQL Error on '</span><span class="si">{</span><span class="nv">$r</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">}</span><span class="s2">' query </span><span class="si">{</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'no'</span><span class="p">]</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'error'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">The query was </span><span class="si">{</span><span class="nv">$e</span><span class="p">[</span><span class="s1">'query'</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// we want to log slow queries</span>
+<span class="k">function</span> <span class="nf">handle_slow</span><span class="p">(</span><span class="nv">$q</span><span class="o">=</span><span class="k">array</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nx">StaticLogClass</span><span class="o">::</span><span class="na">LogQueries</span><span class="p">(</span><span class="s2">"Slow query took </span><span class="si">{</span><span class="nv">$q</span><span class="p">[</span><span class="s1">'exec_time'</span><span class="p">]</span><span class="si">}</span><span class="s2"> to complete: </span><span class="si">{</span><span class="nv">$q</span><span class="p">[</span><span class="s1">'query'</span><span class="p">]</span><span class="si">}</span><span class="s2">);</span>
+<span class="s2">}</span>
+
+</pre></div>
+
+<h5>
+<a name="now-your-script-does-stuff" class="anchor" href="#now-your-script-does-stuff"><span class="octicon octicon-link"></span></a>Now your script does stuff</h5>
+
+<div class="highlight highlight-php"><pre>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$result</span> <span class="o">=</span> <span class="nx">basicSQL</span><span class="o">::</span><span class="na">query</span><span class="p">(</span><span class="s2">"SELECT id FROM users WHERE name='fred'"</span><span class="p">))</span> <span class="p">{</span>
+  <span class="c1">// do stuff</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nb">print_r</span><span class="p">(</span><span class="nx">basicSQL</span><span class="o">::</span><span class="na">lastError</span><span class="p">());</span> <span class="c1">// if you don't have a call_back you get get last error like so</span>
+<span class="p">}</span>
+<span class="nx">basicSQL</span><span class="o">::</span><span class="na">query</span><span class="p">(</span><span class="s2">"DELETE FROM users WHERE name='fred'"</span><span class="p">);</span>
+
+</pre></div>
+
+<h5>
+<a name="at-the-end-of-the-script-we-can-have-a-look-at-the-report" class="anchor" href="#at-the-end-of-the-script-we-can-have-a-look-at-the-report"><span class="octicon octicon-link"></span></a>At the end of the script we can have a look at the report</h5>
+
+<div class="highlight highlight-php"><pre><span class="nb">print_r</span><span class="p">(</span><span class="nx">basicSQL</span><span class="o">::</span><span class="na">report</span><span class="p">());</span>
+<span class="k">Array</span>
+<span class="p">(</span>
+    <span class="p">[</span><span class="nx">exec_time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mf">0.0018630000000001</span>
+    <span class="p">[</span><span class="nx">errors</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">[</span><span class="nx">warnings</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">[</span><span class="nx">slow_queries</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+    <span class="p">[</span><span class="nx">selects</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+    <span class="p">[</span><span class="nx">updates</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">[</span><span class="nx">inserts</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+    <span class="p">[</span><span class="nx">deletes</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+<span class="p">)</span>
+</pre></div>
+
+<h5>
+<a name="or-view-the-query--error--slow_queries-logs" class="anchor" href="#or-view-the-query--error--slow_queries-logs"><span class="octicon octicon-link"></span></a>Or view the query / error / slow_queries logs</h5>
+
+<div class="highlight highlight-php"><pre><span class="nb">print_r</span><span class="p">(</span><span class="nx">basicSQL</span><span class="o">::</span><span class="na">errorLog</span><span class="p">());</span>
+
+<span class="nb">print_r</span><span class="p">(</span><span class="nx">basicSQL</span><span class="o">::</span><span class="na">queryLog</span><span class="p">());</span>
+<span class="k">Array</span>
+<span class="p">(</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="k">Array</span>
+        <span class="p">(</span>
+            <span class="p">[</span><span class="nb">time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1397200192</span>
+            <span class="p">[</span><span class="nx">type</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">select</span>
+            <span class="p">[</span><span class="nx">query</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">SELECT</span> <span class="nx">id</span> <span class="nx">FROM</span> <span class="nx">users</span> <span class="nx">WHERE</span> <span class="nx">name</span><span class="o">=</span><span class="s1">'fred'</span>
+            <span class="p">[</span><span class="nx">num_rows</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+            <span class="p">[</span><span class="nx">field_count</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+            <span class="p">[</span><span class="nx">exec_time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mf">10.00054899999999999</span>
+        <span class="p">)</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="k">Array</span>
+            <span class="p">[</span><span class="nb">time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1397200192</span>
+            <span class="p">[</span><span class="nx">type</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">delete</span>
+            <span class="p">[</span><span class="nx">query</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">DELETE</span> <span class="nx">FROM</span> <span class="nx">users</span> <span class="nx">WHERE</span> <span class="nx">name</span><span class="o">=</span><span class="s1">'fred'</span>
+            <span class="p">[</span><span class="nx">exec_time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mf">0.00023000000000001</span>
+        <span class="p">)</span>
+<span class="p">)</span>
+
+
+<span class="nb">print_r</span><span class="p">(</span><span class="nx">basicSQL</span><span class="o">::</span><span class="na">slowQueryLog</span><span class="p">());</span> <span class="c1">// depending on query_log_length, the may no longer be stored</span>
+<span class="k">Array</span>
+<span class="p">(</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="k">Array</span>
+        <span class="p">(</span>
+            <span class="p">[</span><span class="nb">time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1397200192</span>
+            <span class="p">[</span><span class="nx">type</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">select</span>
+            <span class="p">[</span><span class="nx">query</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="nx">SELECT</span> <span class="nx">id</span> <span class="nx">FROM</span> <span class="nx">users</span> <span class="nx">WHERE</span> <span class="nx">name</span><span class="o">=</span><span class="s1">'fred'</span>
+            <span class="p">[</span><span class="nx">num_rows</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+            <span class="p">[</span><span class="nx">field_count</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mi">1</span>
+            <span class="p">[</span><span class="nx">exec_time</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="mf">10.00054899999999999</span>
+        <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+<h5>
+<a name="and-thats-it-for-the-moment" class="anchor" href="#and-thats-it-for-the-moment"><span class="octicon octicon-link"></span></a>And thats it, for the moment.</h5>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Php-basicsql maintained by <a href="https://github.com/thedarkwinter">thedarkwinter</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
