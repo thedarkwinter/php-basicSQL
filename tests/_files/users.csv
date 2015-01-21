@@ -1,0 +1,4 @@
+id,name,age,mother,father
+2,"Stan Smith",62,0,0
+2,"Jane Smith",62,0,0
+3,"Fred Smith",30,1,2

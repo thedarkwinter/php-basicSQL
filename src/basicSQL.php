@@ -34,6 +34,16 @@ class basicSQL
     private $slow_query_callback = array();
     private $slow_query_time = 5;
 
+    public function __construct($params = array())
+    {
+        return $this->connect($params);
+    }
+
+    public function __destroy()
+    {
+        return $this->close();
+    }
+
     /**
      * Connects to database
      *
